@@ -143,12 +143,13 @@ python inference_video.py --labelmap_path label_map.pbtxt --model_path experimen
 ### Project overview
 This section should contain a brief description of the project and what we are trying to achieve. Why is object detection such an important component of self driving car systems?
 
-### Set up
-This section should contain a brief description of the steps to follow to run the code for this repository.
 
 ### Dataset
 #### Dataset analysis
-This section should contain a quantitative and qualitative description of the dataset. It should include images, charts and other visualizations.
+In this part the goal is to understand the different properties from the waymo dataset. In this section we try to derive some useful features and parameters from the tensor flow files to better use data augmentation and spliting the data for training and evaluation.
+The data set has urban,highway and rural coverage. We try to derive some statistics about the type of object classes available in the data.
+
+
 #### Cross validation
 This section should detail the cross validation strategy and justify your approach.
 
@@ -156,5 +157,84 @@ This section should detail the cross validation strategy and justify your approa
 #### Reference experiment
 This section should detail the results of the reference experiment. It should includes training metrics and a detailed explanation of the algorithm's performances.
 
+vehicles constitute 77.75% of the objects and pedestrians are  21.65 % while cyclists are only 0.637%.
+
+The following are some of the images displayed. The objects are shown by the bounded boxes with various colors.
+Vehicles are colored Red, Pedestrians with blue and Cyclists with green.
+
+
+![image](https://user-images.githubusercontent.com/32779283/189553913-b21369c2-3e30-417f-8b09-acc37c33d9a0.png)
+
+
+We also determine the number of instances different objects appear in a tf record. This helps us determine the level of clutter available in certain images. The results were as follows.
+Max number of different objects in a image  = 76
+Mean number of objects = 14
+minimum number of objects  = 0
+
+The above analysis can be found in the code file Exploratory Data Analysis.ipynb
+
+
+### Reference model experiment
+
+for this project we have used a pre-trained model resnet 50. The .config file is as provided when the pre-trained model was downloaded. when we apply this model to the waymo data set we observe the following results.
+
+![image](https://user-images.githubusercontent.com/32779283/189554914-169642d7-f6e7-4b52-a657-381dbbba700d.png)
+
+![image](https://user-images.githubusercontent.com/32779283/189554918-19a91eb4-e57d-40b9-8d97-0e82899cecb1.png)
+
+Observations:
+- The learning rate is exponentially reducing however its not reducing fast enough
+- The total loss is minimum at around 4.5
+
+Clearly some improvements can be made to improve the loss. Ideally the loss should be less than 1 and closer to 0. According to theory the following is the reference for how to babysit a training.
+![image](https://user-images.githubusercontent.com/32779283/189555067-b617c2b0-2fee-4423-aa85-0e57e981dbd4.png)
+
+
+
 #### Improve on the reference
-This section should highlight the different strategies you adopted to improve your model. It should contain relevant figures and details of your findings.
+
+Experiment 1 : 
+The first obvious improvement was to use more different types of data augmentations. The reason to use data augmentation is to introduce more wide range of scenarios for the training data set.
+We introduce the following data-augmentations:
+- random-adjust brightness
+- random rgb to gray
+- random crop image
+
+![image](https://user-images.githubusercontent.com/32779283/189555168-1516cb03-43b9-4ac3-9acb-0ffc2920a243.png)
+
+observation:
+- we see a very slight improvement in loss
+
+
+Experiment 2:
+
+modify the learning rate. we use the formula new learning rate = old learning rate / number of samples.
+
+The new learning rates used are:
+Base learning rate changes  from 0.04 to 0.00125
+warming up learning rate changes from 0.0133 to 0.000416
+
+![image](https://user-images.githubusercontent.com/32779283/189555449-ec991294-d826-4be3-82d9-293d656cb0b1.png)
+
+![image](https://user-images.githubusercontent.com/32779283/189555459-ef05c3e8-c8d4-4dd0-8830-7fb7e1bd30cd.png)
+
+![image](https://user-images.githubusercontent.com/32779283/189555462-0779839e-03f7-4774-a669-81f4bde66b2a.png)
+
+
+Observations:
+- we notice that the precision and recall values improve
+- learning rate improves and reaches below 1.
+- loss is close to 0.659
+
+here are some Gif examples from the training results
+
+
+https://user-images.githubusercontent.com/32779283/189555498-3677fbaa-61ce-42a0-90c8-1fa78935addc.mp4
+
+
+
+
+
+https://user-images.githubusercontent.com/32779283/189555513-ba73f254-0ed9-4b69-9b6b-4ae0b78ce13b.mp4
+
+
